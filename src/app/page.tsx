@@ -41,7 +41,7 @@ Upcoming Appointments: [List of appointments]
   },
   {
     role: "user",
-    content: `yikes`,
+    content: `What is my lab result`,
   },
   {
     role: "user",
