@@ -219,6 +219,8 @@ const AdalineMessage = ({
                 x: codeEditorCoordX,
                 y: codeEditorCoordY,
               });
+
+              e.preventDefault();
             }
             if (e.key === "ArrowDown" && isLastLine) {
               // Handle exit bottom if necessary
