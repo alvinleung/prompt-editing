@@ -3,6 +3,7 @@
 import AdalineMessage from "@/components/AdalineMessage";
 import { useList } from "@uidotdev/usehooks";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 const DEFAULT_MESSAGES = [
   {
@@ -43,10 +44,6 @@ Upcoming Appointments: [List of appointments]
     role: "user",
     content: `What is my lab result`,
   },
-  {
-    role: "user",
-    content: `test`,
-  },
 ];
 
 export default function Home() {
@@ -66,6 +63,31 @@ export default function Home() {
   const lastMessage = messages[messages.length - 1];
   const isLastMessageEmpty = lastMessage.content === "";
 
+  useHotkeys("ArrowDown", () => {
+    if (selectionLevel === "text") return;
+
+    setSelectionId(selectionId + 1);
+
+    if (isSelectingLastMessage && !isLastMessageEmpty) {
+      push({
+        role: "user",
+        content: "",
+      });
+      setSelectionLevel("text");
+      setSelectionId(messages.length);
+      return;
+    }
+  });
+
+  useHotkeys("ArrowUp", () => {
+    if (selectionLevel === "text") return;
+    setSelectionId(selectionId - 1);
+  });
+
+  useHotkeys("Backspace", () => {
+    removeAt(selectionId);
+  });
+
   return (
     <div className="max-w-[50vw] mx-auto my-12">
       {messages.map((message, index) => (
@@ -78,10 +100,23 @@ export default function Home() {
           currentSelection={selectionId}
           isLastMessage={index === messages.length - 1}
           role={message.role}
-          onDeleteMessage={() => {
-            // setCursorPositionGlobal(textCursor);
+          onInsertAfter={(textCursor) => {
+            setCursorPositionGlobal(textCursor);
+            setSelectionId(index + 1);
+            insertAt(index + 1, {
+              role: messages[index - 1].role,
+              content: messages[index - 1].content + message.content,
+            });
+            setSelectionLevel("text");
+          }}
+          onDeleteMessage={(textCursor) => {
+            setCursorPositionGlobal(textCursor);
             setSelectionId(index - 1);
             removeAt(index);
+            updateAt(index - 1, {
+              role: messages[index - 1].role,
+              content: messages[index - 1].content + message.content,
+            });
             setSelectionLevel("text");
           }}
           onChange={(newMessage) => {

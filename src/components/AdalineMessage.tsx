@@ -10,6 +10,7 @@ import { ReactCodeMirrorRef } from "@uiw/react-codemirror/cjs/index.js";
 import { IconAddImage } from "./IconAddImage";
 import { IconAddTool } from "./IconAddTool";
 import { IconDeleteMessage } from "./IconDeleteMessage";
+import { useHotkeys } from "react-hotkeys-hook";
 
 //@ts-expect-error your mom
 const myTheme = createTheme({
@@ -38,6 +39,7 @@ interface Props {
   role: string;
   onNextMessageContent: (pos: { x: number; y: number }) => void;
   onPrevMessageContent: (pos: { x: number; y: number }) => void;
+  onInsertAfter: (pos: { x: number; y: number }) => void;
   cursorPosition: { x: number; y: number };
   onChange: (message: string) => void;
   onDeleteMessage: (pos: { x: number; y: number }) => void;
@@ -56,6 +58,7 @@ const AdalineMessage = ({
   role,
   onChange,
   onDeleteMessage,
+  onInsertAfter,
 }: Props) => {
   const [isHovering, setIsHovering] = useState(false);
   const isFocused = currentSelection === messageId;
@@ -165,6 +168,14 @@ const AdalineMessage = ({
     }
   }, []);
 
+  useHotkeys("Enter", () => {
+    if (isTextareaFocused === false && isFocused) {
+      setIsTextareaFocused(true);
+      editorRef.current?.view?.focus();
+      setSelectionLevel("text");
+    }
+  });
+
   return (
     <div
       onMouseEnter={() => setIsHovering(true)}
@@ -214,7 +225,11 @@ const AdalineMessage = ({
           onChange={onChange}
           onUpdate={updateCodeMirror}
           onKeyDownCapture={(e) => {
-            if (e.key === "Backspace" && headPos === 0) {
+            if (
+              e.key === "Backspace" &&
+              headPos === 0 &&
+              children.length === 0
+            ) {
               onDeleteMessage({
                 x: codeEditorCoordX,
                 y: codeEditorCoordY,
@@ -222,6 +237,19 @@ const AdalineMessage = ({
 
               e.preventDefault();
             }
+
+            // if (e.key === "Enter" && isLastLine) {
+            //   const isLast3LinesEmpty = children
+            //     .split("\n")
+            //     .slice(-3)
+            //     .every((line) => !line.trim());
+            //   onInsertAfter({
+            //     x: codeEditorCoordX,
+            //     y: codeEditorCoordY,
+            //   });
+            //   e.preventDefault();
+            // }
+
             if (e.key === "ArrowDown" && isLastLine) {
               // Handle exit bottom if necessary
               onNextMessage({
@@ -237,6 +265,12 @@ const AdalineMessage = ({
                 y: codeEditorCoordY,
               });
               setSelectionLevel("text");
+            }
+
+            if (e.key === "Escape") {
+              setIsTextareaFocused(false);
+              editorRef.current?.view?.contentDOM.blur();
+              setSelectionLevel("message");
             }
           }}
         />
