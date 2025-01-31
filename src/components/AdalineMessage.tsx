@@ -106,6 +106,7 @@ const AdalineMessage = ({
   // const [codeEditorCoord, setCodeEditorCoord] = useState({ x: 0, y: 0 });
   const [codeEditorCoordX, setCodeEditorCoordX] = useState(0);
   const [codeEditorCoordY, setCodeEditorCoordY] = useState(0);
+  const [headPos, setHeadPos] = useState(0);
 
   const [isFirstLine, setIsFirstLine] = useState(true);
   const [isLastLine, setIsLastLine] = useState(true);
@@ -113,6 +114,8 @@ const AdalineMessage = ({
   const updateCodeMirror = useCallback((updateInfo: ViewUpdate) => {
     const head = updateInfo.state?.selection.main.to;
     const coordAtHead = updateInfo.view?.coordsForChar(head);
+
+    setHeadPos(head);
 
     if (updateInfo.state.doc.length === 0) {
       setCodeEditorCoordY(updateInfo.view.documentTop);
@@ -211,7 +214,7 @@ const AdalineMessage = ({
           onChange={onChange}
           onUpdate={updateCodeMirror}
           onKeyDownCapture={(e) => {
-            if (e.key === "Backspace" && children.length === 0) {
+            if (e.key === "Backspace" && headPos === 0) {
               onDeleteMessage({
                 x: codeEditorCoordX,
                 y: codeEditorCoordY,

@@ -78,10 +78,11 @@ export default function Home() {
           currentSelection={selectionId}
           isLastMessage={index === messages.length - 1}
           role={message.role}
-          onDeleteMessage={(textCursor) => {
-            removeAt(index);
-            setCursorPositionGlobal(textCursor);
+          onDeleteMessage={() => {
+            // setCursorPositionGlobal(textCursor);
             setSelectionId(index - 1);
+            removeAt(index);
+            setSelectionLevel("text");
           }}
           onChange={(newMessage) => {
             updateAt(index, {
