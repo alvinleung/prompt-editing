@@ -66,8 +66,6 @@ export default function Home() {
   useHotkeys("ArrowDown", () => {
     if (selectionLevel === "text") return;
 
-    setSelectionId(selectionId + 1);
-
     if (isSelectingLastMessage && !isLastMessageEmpty) {
       push({
         role: "user",
@@ -77,15 +75,20 @@ export default function Home() {
       setSelectionId(messages.length);
       return;
     }
+
+    if (selectionId > messages.length - 1) return;
+    setSelectionId(selectionId + 1);
   });
 
   useHotkeys("ArrowUp", () => {
+    if (selectionId === 0) return;
     if (selectionLevel === "text") return;
     setSelectionId(selectionId - 1);
   });
 
   useHotkeys("Backspace", () => {
     removeAt(selectionId);
+    setSelectionId(selectionId - 1);
   });
 
   return (
@@ -135,6 +138,7 @@ export default function Home() {
               setSelectionLevel("text");
               return;
             }
+            if (selectionId === messages.length - 1) return;
             setCursorPositionGlobal(textCursor);
             setSelectionId(index + 1);
           }}
